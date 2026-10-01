@@ -1,0 +1,4 @@
+{
+ "name":"revel-app", "version":"0.1.0", "private":true, "type":"module", "engines":{"node":">=24"},
+ "scripts":{"dev":"next dev --webpack --hostname 0.0.0.0", "build":"next build --webpack && node scripts/pwa.mjs", "start":"next start --hostname 0.0.0.0", "lint":"eslint src e2e", "typecheck":"tsc --noEmit", "test":"vitest run", "coverage":"vitest run --coverage", "test:e2e":"playwright test", "test:e2e:coverage":"COVERAGE=true npm run build && PLAYWRIGHT_COVERAGE=1 playwright test && node scripts/merge-coverage.mjs", "budget":"node scripts/budget.mjs"}
+}
