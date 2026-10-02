@@ -9,6 +9,7 @@ env:
   INTERNAL_API_URL: http://127.0.0.1:4000
   NEXT_PUBLIC_SITE_URL: http://localhost:3000
   NEXT_TELEMETRY_DISABLED: '1'
+  HOSTNAME: 0.0.0.0
 jobs:
   api:
     runs-on: ubuntu-24.04
