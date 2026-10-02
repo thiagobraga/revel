@@ -35,6 +35,9 @@ it('renders server agenda data and configured links, with honest failure states'
     vi.stubGlobal('fetch', fetch);
     expect(renderToStaticMarkup(await Home())).toContain('https://revel.test');
     vi.unstubAllEnvs();
+    vi.stubEnv('INTERNAL_API_URL', undefined);
+    for (const key of ['SPOTIFY_URL', 'BANDCAMP_URL', 'YOUTUBE_URL', 'INSTAGRAM_URL', 'CONTACT_URL', 'PETROLEO_URL'])
+        vi.stubEnv(key, undefined);
     fetch.mockResolvedValueOnce(new Response(null, { status: 503 }));
     expect(renderToStaticMarkup(await Home())).toContain('agendaUnavailable&quot;:true');
     fetch.mockRejectedValueOnce(new Error('Network unavailable'));
@@ -57,6 +60,7 @@ it('handles invalid, confirmed, expired and temporarily unavailable newsletter l
     expect(renderToStaticMarkup(await ConfirmPage({ searchParams: Promise.resolve({ token: 'token&safe' }) }))).toContain('Inscrição confirmada.');
     expect(fetch).toHaveBeenCalledWith('http://api:4000/api/v1/newsletter/confirm?token=token%26safe', { cache: 'no-store' });
     vi.unstubAllEnvs();
+    vi.stubEnv('INTERNAL_API_URL', undefined);
     fetch.mockResolvedValueOnce(new Response(null, { status: 422 }));
     expect(renderToStaticMarkup(await ConfirmPage({ searchParams: Promise.resolve({ token: 'token' }) }))).toContain('expirado');
     fetch.mockRejectedValueOnce(new Error('Offline'));
@@ -72,6 +76,9 @@ it('configures metadata, nonce bootstrap and both production/development manifes
     expect(new URL(String((await generateMetadata()).metadataBase)).hostname).toBe('revel.test');
     expect((await generateMetadata()).manifest).toBe('/manifest.webmanifest');
     vi.unstubAllEnvs();
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', undefined);
+    vi.stubEnv('NODE_ENV', 'test');
+    expect((await generateMetadata()).metadataBase).toBeUndefined();
     expect((await generateMetadata()).manifest).toBe('/manifest.dev.webmanifest');
 });
 it('applies a nonce CSP and permits only same-host sockets for the actual scheme', () => {
@@ -82,6 +89,8 @@ it('applies a nonce CSP and permits only same-host sockets for the actual scheme
     expect(response.headers.get('Content-Security-Policy')).not.toContain('unsafe-eval');
     expect(response.headers.get('Cache-Control')).toBe('no-store');
     vi.unstubAllEnvs();
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', undefined);
+    vi.stubEnv('NODE_ENV', 'development');
     response = proxy(new NextRequest('http://localhost:3000/'));
     expect(response.headers.get('Content-Security-Policy')).toContain('unsafe-eval');
     vi.stubEnv('NODE_ENV', 'production');
