@@ -7,6 +7,7 @@ EXPOSE 3000
 FROM base AS build
 RUN apk upgrade --no-cache
 COPY app ./
+ARG BUILD_REVISION=local
 RUN npm ci --include=optional && npm run build
 
 FROM base AS development

@@ -14,7 +14,10 @@ CMD ["npm", "run", "dev"]
 FROM base AS build
 RUN apk upgrade --no-cache
 COPY api ./
-RUN npm ci --include=optional && npm run build && npm prune --omit=dev && date -u +%Y%m%dT%H%M%SZ > BUILD_ID
+RUN npm ci --include=optional && npm run build && npm prune --omit=dev
+
+ARG BUILD_REVISION=local
+RUN printf '%s-%s\n' "$(date -u +%Y%m%dT%H%M%SZ)" "$BUILD_REVISION" > BUILD_ID
 
 FROM base AS production
 RUN apk upgrade --no-cache && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
