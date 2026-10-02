@@ -5,7 +5,7 @@ Verified locally on Node 24.19.0 using real PostgreSQL 16.15, Redis 7.0.15 and C
 | Check | Result |
 | --- | --- |
 | API lint, strict typecheck and build | Passed |
-| API unit/integration coverage | 30 tests passed. 100% lines, statements, branches and functions across 16 API modules. Types, fixtures and executable startup/CLI wrappers are excluded from the unit coverage denominator; CLI migration/provisioning and server startup were exercised separately. |
+| API unit/integration coverage | 31 tests passed. 100% lines, statements, branches and functions across 16 API modules. Types, fixtures and executable startup/CLI wrappers are excluded from the unit coverage denominator; CLI migration/provisioning and server startup were exercised separately. |
 | App lint, strict typecheck and production build | Passed |
 | App unit coverage | 52 tests passed. 100% lines, statements, branches and functions across all 32 frontend source modules, excluding types and test fixtures. Includes routes, metadata, CSP, auth, primitives, forms, PWA controls, sync and offline behavior. |
 | Production Playwright | Nine tests passed: show CRUD, ordered offline replay, realtime across editors, offline logout wipe, cross-browser preferences, responsive themes/locales, security headers/manifest, offline navigation fallback and Chromium installability. |
@@ -17,7 +17,14 @@ Verified locally on Node 24.19.0 using real PostgreSQL 16.15, Redis 7.0.15 and C
 | SQL migrations | Fresh apply, repeat apply, concurrent advisory locking, changed-checksum rejection and rollback after failing SQL passed against PostgreSQL. |
 | Backup/restore drill | A custom-format pg_dump restored successfully into a separate database with pg_restore --exit-on-error; show row counts matched. |
 | Compose/workflow YAML and shell syntax | Parsed successfully; hooks activated and executable. |
+| GitHub package quality | API and app jobs passed, including both 100% coverage gates, production browser tests, headless Lighthouse and instrumented browser coverage. |
+| Production image/security checks | Both images built and passed the high/critical Trivy gate. CodeQL, npm audit and SBOM generation passed. |
+| Docker development/production boot | CI booted the hardened production stack with dummy secrets, ran migrations once and received a healthy response through the gateway. The development stack also booted with the runner UID/GID and returned a healthy API response. |
 
 Desktop and narrow captures are generated at app/dist/screenshots/desktop-dark.png, desktop-light.png and mobile-light.png. The supplied reference images were compared with these captures; findings are in DESIGN-FIDELITY.md.
 
-Not verified in this execution environment: Docker development boot, production image builds, hardened production compose boot, host Traefik/mkcert configuration, a real production domain, Resend delivery/DNS, the deploy receiver and a configured Claude GitHub App. There is no Docker daemon or container capability here. Quality CI includes real PostgreSQL/Redis, browser coverage, Lighthouse, image builds and production compose boot with generated dummy secrets. CI results must pass before deployment. Production secrets, sending-domain records and deploy credentials remain external configuration.
+GitHub evidence: [quality pipeline](https://github.com/thiagobraga/revel/actions/runs/36955592073) and [security pipeline](https://github.com/thiagobraga/revel/actions/runs/36955591770). The local environment has no Docker daemon or container capability, so Docker builds and boot checks were performed on the hosted CI runner.
+
+Dependency review is blocked by the repository's Dependency graph setting. The workflow keeps its high-severity gate; it has not been bypassed. Enable Dependency graph in repository Settings / Advanced Security and rerun the review check. [Repository security settings](https://github.com/thiagobraga/revel/settings/security_analysis).
+
+Not verified: host Traefik/mkcert configuration, a real production domain, Resend delivery/DNS, the deploy receiver and a configured Claude GitHub App. Production secrets, sending-domain records and deployment credentials remain external configuration. Successful dummy-secret boot is not evidence of a configured production deployment.

@@ -39,3 +39,7 @@ The dev Postgres initializer creates POSTGRES_DB_test on first boot. With an exi
 Activate the Claude workflow by installing the Claude GitHub App for this repository and configuring ANTHROPIC_API_KEY. It accepts @claude mentions only from repository owners, members and collaborators. Playwright MCP is configured in .mcp.json; Claude permissions are in .claude/settings.json. No agent credential is committed.
 
 Image builds receive BUILD_REVISION from the Git SHA or IMAGE_TAG. This changes the timestamped BUILD_ID even when an API layer would otherwise be reused for a frontend-only release.
+
+Enable Dependency graph in the repository Advanced Security settings before relying on dependency-review.yml. The current repository reports that this feature is disabled. The high-severity gate remains enforced; npm audit, CodeQL and container scans run independently.
+
+The cleanup worker writes a heartbeat after each successful database cleanup. Its health check rejects a missing or stale heartbeat, and failed cleanup exits for restart. File-secret variables in .env.example are intentionally empty so development does not require production secret files.

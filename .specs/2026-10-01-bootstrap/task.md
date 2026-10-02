@@ -10,6 +10,7 @@
 8. [x] PWA, offline queue/cache, install/update UX and logout data removal.
 9. [x] Hooks, quality/security/deploy workflows, Claude agents/skills and dev settings.
 10. [x] Strict lint/type/build checks, 100% source-module coverage, production browser tests, Lighthouse and responsive screenshots.
-11. [ ] Sync final checkpoints and finalize PR metadata.
-12. [ ] Docker development boot and hardened production image/compose verification on a Docker host. Not executable locally; CI is configured to perform image/production boot checks.
+11. [x] Sync final checkpoints and finalize follow-up PR #2 after the skeleton PR #1 was merged.
+12. [x] Docker development boot with the host UID/GID, production images and hardened production compose verified in hosted CI.
 13. [ ] Real domain, email DNS/delivery and deployment receiver configuration. Deferred by accepted user choice.
+14. [ ] Enable the repository Dependency graph setting and rerun dependency review. External repository configuration; no bypass added.
