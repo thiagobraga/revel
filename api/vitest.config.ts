@@ -1,0 +1,2 @@
+import {defineConfig} from 'vitest/config';
+export default defineConfig({test:{environment:'node',fileParallelism:false,setupFiles:['src/test/setup.ts'],testTimeout:20000,coverage:{provider:'v8',reporter:['text','html','json'],include:['src/**/*.ts'],exclude:['src/**/*.test.ts','src/test/**','src/types/**','src/index.ts','src/db/migrate.ts','src/db/provisionUser.ts','src/db/seed.ts','src/db/cleanup.ts'],thresholds:{lines:100,functions:100,statements:100,branches:100}}}});

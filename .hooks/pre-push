@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(dirname "$0")/_lib.sh"
+changed=''
+while read -r _local_ref local_sha _remote_ref remote_sha; do
+  [ "$local_sha" = 0000000000000000000000000000000000000000 ] && continue
+  if [ "$remote_sha" = 0000000000000000000000000000000000000000 ]; then remote_sha="$(git merge-base HEAD origin/main)"; fi
+  changed+="$(git diff --name-only "$remote_sha" "$local_sha")"$'\n'
+done
+SKIP_CSS_MINIFY=1 run_checks "$changed" lint test build

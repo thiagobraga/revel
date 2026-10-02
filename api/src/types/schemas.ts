@@ -1,0 +1,11 @@
+import { z } from 'zod';
+const text = z.string().trim().min(1).max(200).refine(s => !/[<>]/.test(s), 'Plain text required');
+export const showInput = z.object({ title: text, city: text, venue: text, startsAt: z.iso.datetime(), ticketUrl: z.url().refine(s => s.startsWith('https://'), 'HTTPS URL required').nullable(), published: z.boolean() }).strict();
+export const showUpdate = showInput.extend({ version: z.number().int().positive() });
+export const emailInput = z.object({ email: z.email().max(254) }).strict();
+export const loginInput = emailInput.extend({ password: z.string().min(1).max(128) });
+export const resetInput = z.object({ token: z.string().min(20).max(100), password: z.string().min(12).max(128) }).strict();
+export const preferencesInput = z.object({ theme: z.enum(['light', 'dark']), locale: z.enum(['pt-BR', 'en']) }).strict();
+export const idInput = z.uuid();
+export const versionInput = z.coerce.number().int().positive();
+export const keyInput = z.string().min(1).max(100).regex(/^[a-zA-Z0-9_-]+$/);

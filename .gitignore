@@ -13,3 +13,8 @@ secrets/
 app/public/sw.js
 app/public/workbox-*.js
 .DS_Store
+BUILD_ID
+*.tsbuildinfo
+app/.babelrc
+app/public/sw.js.map
+app/public/workbox-*.js.map

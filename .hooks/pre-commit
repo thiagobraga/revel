@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(dirname "$0")/_lib.sh"
+run_checks "$(git diff --cached --name-only --diff-filter=ACMR)" lint

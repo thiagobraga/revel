@@ -18,6 +18,8 @@ REST mutation -> boundary Zod validation -> service -> parameterized SQL transac
 | npm --prefix app run lint / build / test / coverage | App checks |
 | npm --prefix app run test:e2e | Browser checks |
 | docker compose exec api npm run provision-user -- EMAIL PASSWORD admin | Provision admin |
+| npm --prefix app run audit:browser / budget | Lighthouse and JS budget |
+| make lint / test / build | Run checks in dev containers |
 | docker compose -f compose.prod.yml up -d | Production deploy with one migration job |
 
 ## Key files
@@ -27,6 +29,30 @@ api/src/config.ts, db/migrate.ts, services/authService.ts, services/showService.
 ## API
 
 GET /health and /version; GET /shows; authenticated POST /shows, PATCH/DELETE /shows/:id; GET /auth/csrf, /auth/me; POST /auth/login, /auth/logout, /auth/forgot-password, /auth/reset-password; GET/PATCH /preferences; POST /newsletter; GET /newsletter/confirm; GET /account/export, DELETE /account; admin POST /shows/import. Errors: {error:{code,message,details?}}. Show updates require the current version; mutations use Idempotency-Key.
+
+## Environment
+
+Copy .env.example for development. Leave file-secret overrides empty there; production compose injects /run/secrets paths. Do not log credentials or commit a live .env.
+
+| Variables | Purpose |
+| --- | --- |
+| COMPOSE_PROJECT_NAME, APP_SUBDOMAIN, PROXY_NETWORK, DOCKER_USER | Isolated worktree containers, routing and host-owned files |
+| POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB | Development database initialization |
+| DATABASE_URL, REDIS_URL, REDIS_PASSWORD | Database and Redis connections |
+| CORS_ORIGIN, CSRF_SECRET | Exact browser origin and signed CSRF protection |
+| NODE_ENV, PORT, INTERNAL_API_URL | API runtime and server-side app proxy target; app listens on 3000 |
+| NEXT_PUBLIC_SITE_URL, NEXT_PUBLIC_BUILD_ID, BUILD_REVISION | Public metadata and release/cache identity |
+| SESSION_IDLE_TTL_MINUTES, SESSION_ABSOLUTE_TTL_HOURS | Revocable session expiry |
+| RESEND_API_KEY, EMAIL_FROM | Verified production mail; development logs links without a key |
+| DEV_ADMIN_EMAIL, DEV_ADMIN_PASSWORD | Development-only seed account |
+| GHCR_OWNER, IMAGE_TAG, PROD_DOMAIN | Registry owner, immutable release tag and future production domain |
+| DATABASE_URL_FILE, REDIS_URL_FILE, CSRF_SECRET_FILE, RESEND_API_KEY_FILE | API Docker secrets; nonempty X_FILE takes precedence over X |
+| POSTGRES_USER_FILE, POSTGRES_PASSWORD_FILE, POSTGRES_DB_FILE, REDIS_PASSWORD_FILE | Database/Redis secret files |
+| BACKUP_DIR | Host directory for retained dumps |
+| SPOTIFY_URL, BANDCAMP_URL, YOUTUBE_URL, INSTAGRAM_URL, CONTACT_URL, PETROLEO_URL | Actual band links; empty means unavailable |
+| TEST_DATABASE_URL, TEST_REDIS_URL | Dedicated integration-test stores, separate from live development data |
+| PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH, E2E_BASE_URL, PLAYWRIGHT_COVERAGE, COVERAGE | Browser selection, test target and optional Istanbul build |
+| ANTHROPIC_API_KEY, DEPLOY_WEBHOOK_URL, DEPLOY_WEBHOOK_TOKEN | External GitHub Actions configuration, never repository files |
 
 ## Conventions
 

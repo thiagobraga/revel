@@ -1,0 +1,17 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /api
+    schedule: {interval: weekly}
+  - package-ecosystem: npm
+    directory: /app
+    schedule: {interval: weekly}
+  - package-ecosystem: docker
+    directory: /.docker/api
+    schedule: {interval: weekly}
+  - package-ecosystem: docker
+    directory: /.docker/app
+    schedule: {interval: weekly}
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: {interval: weekly}

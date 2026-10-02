@@ -1,0 +1,97 @@
+name: Quality
+on: [workflow_call]
+permissions: {contents: read}
+env:
+  DATABASE_URL: postgres://revel:revel-test-password@127.0.0.1:5432/revel_test
+  REDIS_URL: redis://127.0.0.1:6379
+  CORS_ORIGIN: http://localhost:3000
+  CSRF_SECRET: test-csrf-secret-0123456789-abcdef
+  INTERNAL_API_URL: http://127.0.0.1:4000
+  NEXT_PUBLIC_SITE_URL: http://localhost:3000
+  NEXT_TELEMETRY_DISABLED: '1'
+  HOSTNAME: 0.0.0.0
+jobs:
+  api:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: {POSTGRES_USER: revel, POSTGRES_PASSWORD: revel-test-password, POSTGRES_DB: revel_test}
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults: {run: {working-directory: api}}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with: {node-version: '24', cache: npm, cache-dependency-path: api/package-lock.json}
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run coverage
+        env: {NODE_ENV: test}
+      - run: npm run build
+  app:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: {POSTGRES_USER: revel, POSTGRES_PASSWORD: revel-test-password, POSTGRES_DB: revel_test}
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults: {run: {working-directory: app}}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with: {node-version: '24', cache: npm, cache-dependency-path: app/package-lock.json}
+      - run: npm ci
+      - run: npm --prefix ../api ci && npm --prefix ../api run build
+      - run: NODE_ENV=test node ../api/dist/db/migrate.js
+      - run: npm run lint && npm run typecheck && npm run coverage
+      - run: npm run build && npm run budget
+      - run: npx playwright install --with-deps chromium
+      - run: NODE_ENV=test node ../api/dist/index.js > /tmp/revel-api.log 2>&1 &
+      - run: node .next/standalone/server.js > /tmp/revel-app.log 2>&1 & echo $! > /tmp/revel-app.pid
+      - run: node scripts/wait.mjs && npm run test:e2e && CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" npm run audit:browser
+        env: {NODE_ENV: test}
+      - run: kill "$(cat /tmp/revel-app.pid)"
+      - run: COVERAGE=true npm run build
+      - run: node .next/standalone/server.js > /tmp/revel-coverage.log 2>&1 &
+      - run: node scripts/wait.mjs && PLAYWRIGHT_COVERAGE=1 npm run test:e2e -- --grep-invert 'production security|installs the service worker|wipes private cached|meets Chromium' && node scripts/merge-coverage.mjs
+        env: {NODE_ENV: test}
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: verification
+          path: |
+            app/dist/screenshots
+            app/dist/lighthouse
+            app/coverage-reports
+  containers:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - run: docker build --build-arg BUILD_REVISION=${{ github.sha }} -f .docker/api/Dockerfile --target production -t ghcr.io/thiagobraga/revel-api:ci .
+      - run: docker build --build-arg BUILD_REVISION=${{ github.sha }} -f .docker/app/Dockerfile --target production -t ghcr.io/thiagobraga/revel-app:ci .
+      - run: bash scripts/test-secrets.sh
+      - run: IMAGE_TAG=ci CORS_ORIGIN=https://revel.test EMAIL_FROM='Revel <noreply@mail.revel.test>' docker compose -f compose.prod.yml up -d --wait
+      - run: curl --fail http://127.0.0.1:8080/api/v1/health
+      - if: always()
+        run: docker compose -f compose.prod.yml logs
+        env: {IMAGE_TAG: ci, CORS_ORIGIN: 'https://revel.test', EMAIL_FROM: 'noreply@mail.revel.test'}
+      - name: Boot development containers with host-owned files
+        run: |
+          cp .env.example .env
+          docker network create proxy
+          DOCKER_USER="$(id -u):$(id -g)" docker compose -p revel-dev-ci up -d --build --wait
+          docker compose -p revel-dev-ci exec -T app node -e "fetch('http://api:4000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      - if: always()
+        run: docker compose -p revel-dev-ci logs
