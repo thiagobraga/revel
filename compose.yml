@@ -44,6 +44,8 @@ services:
       target: development
     user: ${DOCKER_USER:-1000:1000}
     env_file: .env
+    environment:
+      NPM_CONFIG_CACHE: /tmp/npm-cache
     volumes:
     - ./api:/app
     networks:
@@ -70,7 +72,7 @@ services:
     - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.rule=Host(`api.${APP_SUBDOMAIN}.local`)
     - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.tls=true
     - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.priority=20
-    - traefik.http.routers.${COMPOSE_PROJECT_NAME}-rest.rule=Host(`${APP_SUBDOMAIN}.local`) && (PathPrefix(`/api/`) || PathPrefix(`/socket.io/`))
+    - traefik.http.routers.${COMPOSE_PROJECT_NAME}-rest.rule=Host(`${APP_SUBDOMAIN}.local`) && (PathPrefix(`/api/`) || PathPrefix(`/socket.io`))
     - traefik.http.routers.${COMPOSE_PROJECT_NAME}-rest.tls=true
     - traefik.http.routers.${COMPOSE_PROJECT_NAME}-rest.priority=100
     - traefik.http.services.${COMPOSE_PROJECT_NAME}-api.loadbalancer.server.port=4000
@@ -83,6 +85,9 @@ services:
     env_file: .env
     environment:
       WATCHPACK_POLLING: 'true'
+      PORT: '3000'
+      NPM_CONFIG_CACHE: /tmp/npm-cache
+      PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: /usr/bin/chromium-browser
     volumes:
     - ./app:/app
     networks:
@@ -91,6 +96,12 @@ services:
     depends_on:
       api:
         condition: service_healthy
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      start_period: 60s
+      retries: 20
     labels:
     - traefik.enable=true
     - traefik.docker.network=${PROXY_NETWORK:-proxy}
