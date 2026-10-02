@@ -22,7 +22,7 @@ jobs:
       redis:
         image: redis:7-alpine
         ports: ['6379:6379']
-        options: --health-cmd 'redis-cli ping' --health-interval 5s --health-timeout 5s --health-retries 10
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 5s --health-retries 10
     defaults: {run: {working-directory: api}}
     steps:
       - uses: actions/checkout@v7
@@ -45,7 +45,7 @@ jobs:
       redis:
         image: redis:7-alpine
         ports: ['6379:6379']
-        options: --health-cmd 'redis-cli ping' --health-interval 5s --health-timeout 5s --health-retries 10
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 5s --health-retries 10
     defaults: {run: {working-directory: app}}
     steps:
       - uses: actions/checkout@v7
@@ -88,3 +88,11 @@ jobs:
       - if: always()
         run: docker compose -f compose.prod.yml logs
         env: {IMAGE_TAG: ci, CORS_ORIGIN: 'https://revel.test', EMAIL_FROM: 'noreply@mail.revel.test'}
+      - name: Boot development containers with host-owned files
+        run: |
+          cp .env.example .env
+          docker network create proxy
+          DOCKER_USER="$(id -u):$(id -g)" docker compose -p revel-dev-ci up -d --build --wait
+          docker compose -p revel-dev-ci exec -T app node -e "fetch('http://api:4000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      - if: always()
+        run: docker compose -p revel-dev-ci logs
