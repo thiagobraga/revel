@@ -40,6 +40,6 @@ Activate the Claude workflow by installing the Claude GitHub App for this reposi
 
 Image builds receive BUILD_REVISION from the Git SHA or IMAGE_TAG. This changes the timestamped BUILD_ID even when an API layer would otherwise be reused for a frontend-only release.
 
-Enable Dependency graph in the repository Advanced Security settings before relying on dependency-review.yml. The current repository reports that this feature is disabled. The high-severity gate remains enforced; npm audit, CodeQL and container scans run independently.
+Enable Dependency graph in the repository Advanced Security settings before relying on dependency-review.yml. The dependency-review action currently reports that this feature is unavailable; inspect the repository setting before relying on the check. The high-severity gate remains enforced; npm audit, CodeQL and container scans run independently.
 
 The cleanup worker writes a heartbeat after each successful database cleanup. Its health check rejects a missing or stale heartbeat, and failed cleanup exits for restart. File-secret variables in .env.example are intentionally empty so development does not require production secret files.

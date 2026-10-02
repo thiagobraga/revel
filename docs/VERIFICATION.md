@@ -25,6 +25,6 @@ Desktop and narrow captures are generated at app/dist/screenshots/desktop-dark.p
 
 GitHub evidence: [quality pipeline](https://github.com/thiagobraga/revel/actions/runs/36955592073) and [security pipeline](https://github.com/thiagobraga/revel/actions/runs/36955591770). The local environment has no Docker daemon or container capability, so Docker builds and boot checks were performed on the hosted CI runner.
 
-Dependency review is blocked by the repository's Dependency graph setting. The workflow keeps its high-severity gate; it has not been bypassed. Enable Dependency graph in repository Settings / Advanced Security and rerun the review check. [Repository security settings](https://github.com/thiagobraga/revel/settings/security_analysis).
+GitHub's dependency-review action reports that the feature is unavailable for this repository and asks for Dependency graph to be enabled. The workflow keeps its high-severity gate; it has not been bypassed. Check Dependency graph availability in repository Settings / Advanced Security and rerun the review check; its actual setting state could not be inspected through the connector. [Repository security settings](https://github.com/thiagobraga/revel/settings/security_analysis).
 
 Not verified: host Traefik/mkcert configuration, a real production domain, Resend delivery/DNS, the deploy receiver and a configured Claude GitHub App. Production secrets, sending-domain records and deployment credentials remain external configuration. Successful dummy-secret boot is not evidence of a configured production deployment.

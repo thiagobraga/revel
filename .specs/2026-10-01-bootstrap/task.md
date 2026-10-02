@@ -13,4 +13,4 @@
 11. [x] Sync final checkpoints and finalize follow-up PR #2 after the skeleton PR #1 was merged.
 12. [x] Docker development boot with the host UID/GID, production images and hardened production compose verified in hosted CI.
 13. [ ] Real domain, email DNS/delivery and deployment receiver configuration. Deferred by accepted user choice.
-14. [ ] Enable the repository Dependency graph setting and rerun dependency review. External repository configuration; no bypass added.
+14. [ ] Check repository Dependency graph availability and rerun dependency review. External repository configuration; no bypass added.
