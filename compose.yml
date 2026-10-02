@@ -1,0 +1,98 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      POSTGRES_DB: ${POSTGRES_DB:?required}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    networks: [data]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    command: [sh, -c, 'exec redis-server /etc/redis/redis.conf --requirepass "$${REDIS_PASSWORD}"']
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?required}
+    volumes: [redisdata:/data, './.docker/redis/redis.conf:/etc/redis/redis.conf:ro']
+    networks: [data]
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH="$${REDIS_PASSWORD}" redis-cli ping | grep -q PONG']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  api:
+    build: {context: ., dockerfile: .docker/api/Dockerfile, target: development}
+    user: ${DOCKER_USER:-1000:1000}
+    env_file: .env
+    volumes: ['./api:/app']
+    networks: [proxy, data]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:4000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      start_period: 60s
+      retries: 10
+    labels:
+      traefik.enable: 'true'
+      traefik.docker.network: ${PROXY_NETWORK:-proxy}
+      traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.rule: Host(`api.${APP_SUBDOMAIN}.local`)
+      traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.tls: 'true'
+      traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.priority: '20'
+      traefik.http.routers.${COMPOSE_PROJECT_NAME}-rest.rule: Host(`${APP_SUBDOMAIN}.local`) && (PathPrefix(`/api/`) || PathPrefix(`/socket.io/`))
+      traefik.http.routers.${COMPOSE_PROJECT_NAME}-rest.tls: 'true'
+      traefik.http.routers.${COMPOSE_PROJECT_NAME}-rest.priority: '100'
+      traefik.http.services.${COMPOSE_PROJECT_NAME}-api.loadbalancer.server.port: '4000'
+  app:
+    build: {context: ., dockerfile: .docker/app/Dockerfile, target: development}
+    user: ${DOCKER_USER:-1000:1000}
+    env_file: .env
+    environment: {WATCHPACK_POLLING: 'true'}
+    volumes: ['./app:/app']
+    networks: [proxy, data]
+    depends_on:
+      api: {condition: service_healthy}
+    labels:
+      traefik.enable: 'true'
+      traefik.docker.network: ${PROXY_NETWORK:-proxy}
+      traefik.http.routers.${COMPOSE_PROJECT_NAME}-app.rule: Host(`${APP_SUBDOMAIN}.local`)
+      traefik.http.routers.${COMPOSE_PROJECT_NAME}-app.tls: 'true'
+      traefik.http.routers.${COMPOSE_PROJECT_NAME}-app.priority: '10'
+      traefik.http.services.${COMPOSE_PROJECT_NAME}-app.loadbalancer.server.port: '3000'
+  pgadmin:
+    image: dpage/pgadmin4:9
+    profiles: [debug]
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.test
+      PGADMIN_DEFAULT_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    volumes: ['./.docker/pgadmin/servers.json:/pgadmin4/servers.json:ro']
+    networks: [proxy, data]
+    depends_on:
+      postgres: {condition: service_healthy}
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.${COMPOSE_PROJECT_NAME}-db.rule: Host(`db.${APP_SUBDOMAIN}.local`)
+      traefik.http.routers.${COMPOSE_PROJECT_NAME}-db.tls: 'true'
+      traefik.http.services.${COMPOSE_PROJECT_NAME}-db.loadbalancer.server.port: '80'
+  coverage:
+    image: nginxinc/nginx-unprivileged:1.31-alpine
+    profiles: [debug]
+    volumes: ['./app/coverage-reports:/usr/share/nginx/html:ro']
+    networks: [proxy]
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.${COMPOSE_PROJECT_NAME}-coverage.rule: Host(`coverage.${APP_SUBDOMAIN}.local`)
+      traefik.http.routers.${COMPOSE_PROJECT_NAME}-coverage.tls: 'true'
+      traefik.http.services.${COMPOSE_PROJECT_NAME}-coverage.loadbalancer.server.port: '8080'
+networks:
+  proxy: {external: true, name: '${PROXY_NETWORK:-proxy}'}
+  data: {}
+volumes: {pgdata: {}, redisdata: {}}
