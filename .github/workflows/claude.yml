@@ -1,0 +1,13 @@
+name: Claude
+on: {issue_comment: {types: [created]}}
+permissions: {contents: read}
+
+jobs:
+  review:
+    if: contains(github.event.comment.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    permissions: {contents: write, pull-requests: write, issues: write, id-token: write}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: anthropics/claude-code-action@v1
+        with: {anthropic_api_key: '${{ secrets.ANTHROPIC_API_KEY }}'}

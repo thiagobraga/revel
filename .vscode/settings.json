@@ -1,0 +1,10 @@
+{
+  "editor.formatOnSave": false,
+  "eslint.workingDirectories": [
+    "api",
+    "app"
+  ],
+  "files.exclude": {
+    "**/node_modules": true
+  }
+}
