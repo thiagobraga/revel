@@ -1,0 +1,2 @@
+import {defineConfig} from 'vitest/config';
+export default defineConfig({test:{environment:'happy-dom',include:['src/**/*.test.ts','src/**/*.test.tsx'],setupFiles:['src/test/setup.ts'],coverage:{provider:'v8',reporter:['text','html','json'],reportsDirectory:'coverage-reports/unit',include:['src/**/*.ts','src/**/*.tsx'],exclude:['src/**/*.test.*','src/types/**','src/test/**'],thresholds:{lines:100,functions:100,statements:100,branches:100}}}});
