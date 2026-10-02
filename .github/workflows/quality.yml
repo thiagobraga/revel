@@ -75,7 +75,6 @@ jobs:
             app/dist/lighthouse
             app/coverage-reports
   containers:
-    needs: [api, app]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
