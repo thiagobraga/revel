@@ -18,6 +18,8 @@ REST mutation -> boundary Zod validation -> service -> parameterized SQL transac
 | npm --prefix app run lint / build / test / coverage | App checks |
 | npm --prefix app run test:e2e | Browser checks |
 | docker compose exec api npm run provision-user -- EMAIL PASSWORD admin | Provision admin |
+| npm --prefix app run audit:browser / budget | Lighthouse and JS budget |
+| make lint / test / build | Run checks in dev containers |
 | docker compose -f compose.prod.yml up -d | Production deploy with one migration job |
 
 ## Key files
