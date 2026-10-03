@@ -1,7 +1,7 @@
 x-api-environment: &api-environment
   NODE_ENV: production
   PORT: 4000
-  CORS_ORIGIN: ${CORS_ORIGIN:?required HTTPS production origin}
+  CORS_ORIGIN: https://${PROD_DOMAIN:?required production hostname}
   DATABASE_URL_FILE: /run/secrets/database_url
   REDIS_URL_FILE: /run/secrets/redis_url
   CSRF_SECRET_FILE: /run/secrets/csrf_secret
@@ -34,13 +34,13 @@ services:
       retries: 10
   app:
     <<: *hardened
-    image: ghcr.io/${GHCR_OWNER:-thiagobraga}/revel-app:${IMAGE_TAG:-latest}
+    image: ghcr.io/${GHCR_OWNER:-thiagobraga}/revel-app:${IMAGE_TAG:?required release image tag}
     build: {context: ., dockerfile: .docker/app/Dockerfile, target: production, args: {BUILD_REVISION: '${IMAGE_TAG:-local}'}}
     user: '1000:1000'
     environment:
       NODE_ENV: production
       INTERNAL_API_URL: http://api:4000
-      NEXT_PUBLIC_SITE_URL: ${CORS_ORIGIN:?required}
+      SITE_URL: https://${PROD_DOMAIN:?required production hostname}
       SPOTIFY_URL: ${SPOTIFY_URL:-}
       BANDCAMP_URL: ${BANDCAMP_URL:-}
       YOUTUBE_URL: ${YOUTUBE_URL:-}
@@ -53,7 +53,7 @@ services:
       api: {condition: service_healthy}
   api:
     <<: *hardened
-    image: ghcr.io/${GHCR_OWNER:-thiagobraga}/revel-api:${IMAGE_TAG:-latest}
+    image: ghcr.io/${GHCR_OWNER:-thiagobraga}/revel-api:${IMAGE_TAG:?required release image tag}
     build: {context: ., dockerfile: .docker/api/Dockerfile, target: production, args: {BUILD_REVISION: '${IMAGE_TAG:-local}'}}
     user: '1000:1000'
     environment: *api-environment
@@ -68,7 +68,7 @@ services:
     <<: *hardened
     healthcheck: {disable: true}
     restart: 'no'
-    image: ghcr.io/${GHCR_OWNER:-thiagobraga}/revel-api:${IMAGE_TAG:-latest}
+    image: ghcr.io/${GHCR_OWNER:-thiagobraga}/revel-api:${IMAGE_TAG:?required release image tag}
     build: {context: ., dockerfile: .docker/api/Dockerfile, target: production, args: {BUILD_REVISION: '${IMAGE_TAG:-local}'}}
     user: '1000:1000'
     command: [node, dist/db/migrate.js]
@@ -87,7 +87,7 @@ services:
       timeout: 5s
       start_period: 30s
       retries: 3
-    image: ghcr.io/${GHCR_OWNER:-thiagobraga}/revel-api:${IMAGE_TAG:-latest}
+    image: ghcr.io/${GHCR_OWNER:-thiagobraga}/revel-api:${IMAGE_TAG:?required release image tag}
     user: '1000:1000'
     command: [sh, -c, 'set -e; while true; do node dist/db/cleanup.js; touch /tmp/cleanup-ok; sleep 3600; done']
     environment: *api-environment
