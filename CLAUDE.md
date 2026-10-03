@@ -41,11 +41,11 @@ Copy .env.example for development. Leave file-secret overrides empty there; prod
 | DATABASE_URL, REDIS_URL, REDIS_PASSWORD | Database and Redis connections |
 | CORS_ORIGIN, CSRF_SECRET | Exact browser origin and signed CSRF protection |
 | NODE_ENV, PORT, INTERNAL_API_URL | API runtime and server-side app proxy target; app listens on 3000 |
-| NEXT_PUBLIC_SITE_URL, NEXT_PUBLIC_BUILD_ID, BUILD_REVISION | Public metadata and release/cache identity |
+| SITE_URL, NEXT_PUBLIC_BUILD_ID, BUILD_REVISION | Runtime server metadata/CSP origin and release/cache identity |
 | SESSION_IDLE_TTL_MINUTES, SESSION_ABSOLUTE_TTL_HOURS | Revocable session expiry |
 | RESEND_API_KEY, EMAIL_FROM | Verified production mail; development logs links without a key |
 | DEV_ADMIN_EMAIL, DEV_ADMIN_PASSWORD | Development-only seed account |
-| GHCR_OWNER, IMAGE_TAG, PROD_DOMAIN | Registry owner, immutable release tag and future production domain |
+| GHCR_OWNER, IMAGE_TAG, PROD_DOMAIN | Registry owner, immutable release tag and production hostname |
 | DATABASE_URL_FILE, REDIS_URL_FILE, CSRF_SECRET_FILE, RESEND_API_KEY_FILE | API Docker secrets; nonempty X_FILE takes precedence over X |
 | POSTGRES_USER_FILE, POSTGRES_PASSWORD_FILE, POSTGRES_DB_FILE, REDIS_PASSWORD_FILE | Database/Redis secret files |
 | BACKUP_DIR | Host directory for retained dumps |

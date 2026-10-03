@@ -11,4 +11,4 @@ bash .hooks/setup-hooks.sh
 docker compose up -d
 ```
 
-See [operations](docs/OPERATIONS.md) for production secrets, provisioning, email, backups and restore. See [CLAUDE.md](CLAUDE.md) for architecture and commands, [the plan](.specs/2026-10-01-bootstrap/plan.md) for approved decisions, and [verification](docs/VERIFICATION.md) for tested behavior and limits. Generated API contract: GET /api/v1/openapi.json. External music/contact links and the production domain remain configuration.
+See [operations](docs/OPERATIONS.md) for production secrets, provisioning, email, backups and restore. See [CLAUDE.md](CLAUDE.md) for architecture and commands, [the plan](.specs/2026-10-01-bootstrap/plan.md) for approved decisions, and [verification](docs/VERIFICATION.md) for tested behavior and limits. Generated API contract: GET /api/v1/openapi.json. Production is planned at https://revel.thiagobraga.dev on the existing VPS; see [the production runbook](docs/PRODUCTION.md). External music/contact links remain configuration.

@@ -7,7 +7,7 @@ env:
   CORS_ORIGIN: http://localhost:3000
   CSRF_SECRET: test-csrf-secret-0123456789-abcdef
   INTERNAL_API_URL: http://127.0.0.1:4000
-  NEXT_PUBLIC_SITE_URL: http://localhost:3000
+  SITE_URL: http://localhost:3000
   NEXT_TELEMETRY_DISABLED: '1'
   HOSTNAME: 0.0.0.0
 jobs:
@@ -82,11 +82,11 @@ jobs:
       - run: docker build --build-arg BUILD_REVISION=${{ github.sha }} -f .docker/api/Dockerfile --target production -t ghcr.io/thiagobraga/revel-api:ci .
       - run: docker build --build-arg BUILD_REVISION=${{ github.sha }} -f .docker/app/Dockerfile --target production -t ghcr.io/thiagobraga/revel-app:ci .
       - run: bash scripts/test-secrets.sh
-      - run: IMAGE_TAG=ci CORS_ORIGIN=https://revel.test EMAIL_FROM='Revel <noreply@mail.revel.test>' docker compose -f compose.prod.yml up -d --wait
-      - run: curl --fail http://127.0.0.1:8080/api/v1/health
+      - run: IMAGE_TAG=ci PROD_DOMAIN=revel.test EMAIL_FROM='Revel <noreply@mail.revel.test>' docker compose -f compose.prod.yml up -d --wait
+      - run: PROD_DOMAIN=revel.test node scripts/check-production.mjs
       - if: always()
         run: docker compose -f compose.prod.yml logs
-        env: {IMAGE_TAG: ci, CORS_ORIGIN: 'https://revel.test', EMAIL_FROM: 'noreply@mail.revel.test'}
+        env: {IMAGE_TAG: ci, PROD_DOMAIN: revel.test, EMAIL_FROM: 'noreply@mail.revel.test'}
       - name: Boot development containers with host-owned files
         run: |
           cp .env.example .env

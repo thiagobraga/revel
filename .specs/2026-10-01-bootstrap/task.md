@@ -12,5 +12,5 @@
 10. [x] Strict lint/type/build checks, 100% source-module coverage, production browser tests, Lighthouse and responsive screenshots.
 11. [x] Sync final checkpoints and finalize follow-up PR #2 after the skeleton PR #1 was merged.
 12. [x] Docker development boot with the host UID/GID, production images and hardened production compose verified in hosted CI.
-13. [ ] Real domain, email DNS/delivery and deployment receiver configuration. Deferred by accepted user choice.
+13. [ ] Domain selected: revel.thiagobraga.dev on the existing VPS. DNS/TLS, email delivery and actual deployment remain pending; see ../2026-10-03-production/.
 14. [ ] Check repository Dependency graph availability and rerun dependency review. External repository configuration; no bypass added.

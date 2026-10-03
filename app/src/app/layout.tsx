@@ -6,7 +6,7 @@ import { PwaControls } from '../components/PwaControls';
 import type { ChildrenProps } from '../types/ui';
 import './globals.css';
 export async function generateMetadata(): Promise<Metadata> {
-    const url = process.env.NEXT_PUBLIC_SITE_URL;
+    const url = process.env.SITE_URL;
     return { title: 'REVEL | Estrada Perdida', description: 'Hardcore e crust. Ruído, concreto e resistência.', ...(url ? { metadataBase: new URL(url) } : {}), manifest: process.env.NODE_ENV === 'production' ? '/manifest.webmanifest' : '/manifest.dev.webmanifest', appleWebApp: { capable: true, title: 'REVEL', statusBarStyle: 'black-translucent' }, icons: { icon: '/favicon.ico', apple: '/icons/apple-touch-icon.png' }, openGraph: { title: 'REVEL | Estrada Perdida', description: 'Ruído, concreto e resistência.', images: ['/artwork/estrada-perdida-original.jpg'], type: 'website' }, robots: { index: true, follow: true } };
 }
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#111111' };
